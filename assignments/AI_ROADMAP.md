@@ -17,9 +17,9 @@ Behind this seamless user experience, the system will analyze conversations to e
 ## Few mockup's I generated using AI
 
 ### First Mockup
-![Mockup 1](../images/feature-mockup-1.png)
+<img src="../images/feature-mockup-1.png" alt="Mockup 1" height="400">
 
 ### Second Mockup
-![Mockup 2](../images/feature-mockup-2.png)
+<img src="../images/feature-mockup-2.png" alt="Mockup 2" height="400">
 
-For more information on Journal-LLM, see the [main README](../README.md).
+For more information on Journal-LLM, see the <a href="../README.md" target="_blank">main README</a>.

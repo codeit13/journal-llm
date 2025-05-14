@@ -60,22 +60,7 @@ Automate extraction and summarisation of user reviews for the Operations Team:
      0 0 1 * * /path/to/monthly_report.sh
      ```
 
-## Usage
-
-- Insert a review → triggers Kafka event
-- Service processes and routes output
-- Check inbox/dashboard for alerts, digests, reports
-
-## Maintenance
-
-- Monitor Kafka lag
-- Rotate logs
-- Update summary model as needed
-
-- **Sentiment analysis** of reviews
-- **Key point extraction** from lengthy reviews
-- **Priority classification** based on content
-- **Summary generation** for daily and monthly reports
+---
 
 For more information on Journal-LLM, see the [main README](../README.md).
 
