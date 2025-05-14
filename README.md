@@ -11,12 +11,32 @@ Journal-LLM is a specialized language model fine-tuned on journal data. The mode
 
 ## 🔗 Resources
 
-- **Model**: Access the fine-tuned model on [Hugging Face](https://huggingface.co/thesleebit/journal-llm-v2)
-- **Training Notebook**: View the fine-tuning process in this [Google Colab Notebook](https://colab.research.google.com/drive/1NlqXAOOxmmBBQcWlKoC-XnXrmWXsYEXx?usp=sharing)
+<div align="center">
+
+| Resource | Link |
+|:-------:|:----:|
+| <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" height="30" width="30" alt="Hugging Face Logo"> | [**Fine-tuned Model pushed to Hugging Face**](https://huggingface.co/thesleebit/journal-llm-v2) |
+| <img src="https://colab.research.google.com/img/colab_favicon_256px.png" height="30" width="30" alt="Google Colab Logo"> | [**Training Notebook on Google Colab**](https://colab.research.google.com/drive/1NlqXAOOxmmBBQcWlKoC-XnXrmWXsYEXx?usp=sharing) |
+
+</div>
 
 ## 📊 Dataset
 
-The model is trained on `dataset.jsonl`, which contains structured journal entries and related text.
+The model is trained on `dataset.jsonl` (400 rows), which contains structured journal entries paired with reflective questions. The dataset is generated using the `build_dataset.py` script, which works as follows:
+
+1. **Base Data**: Uses a diverse collection of 400+ life events from `utils/life_events.json` (e.g., "Starting a new job", "Moving to a new city")
+
+2. **Generation Process**:
+   - Selects life events from carefully curated collection of 400 life events
+   - For each event, generates an authentic first-person journal entry using GPT-4o-mini
+   - Creates 5 thoughtful follow-up questions for each entry that explore emotions, patterns, perspectives, values, and actionable insights
+   - Saves each entry-questions pair to `dataset.jsonl` in a structured format
+
+3. **Data Format**: Each record in the JSONL file contains:
+   - `input`: The generated journal entry text
+   - `output`: Five reflective questions that prompt deeper introspection
+
+This synthetic dataset provides diverse training examples for the model to learn effective journaling analysis patterns.
 
 ## 📸 Results
 
@@ -31,6 +51,7 @@ The model is trained on `dataset.jsonl`, which contains structured journal entri
 *Model output before the fine-tuning process*
 
 ### After Fine-tuning
+> Style of the model output matches input dataset style.
 
 ![After Fine-tuning Results](images/after-finetune.png)
 *Model output after fine-tuning, showing improved performance*
@@ -58,7 +79,20 @@ uv run build_dataset.py
 uv run run_llm.py
 ```
 
-## 🤔 Journal Analysis Tool
+## 📄 Other Tasks
+
+- [Review Summariser for Ops Team](assignments/REVIEW_SUMMARISER.md) - Documentation for the review summarization feature
+- [AI Feature Suggestion](assignments/AI_ROADMAP.md) - Future features and AI integration plans
+- [User Experience Issues](assignments/User_Experience_Issues.md) - Current UX issues and proposed solutions
+
+
+---
+
+<p align="center">Made with ❤️ by <a href="https://github.com/codeit13">Sumit Chauhan</a></p>
+
+---
+
+## 🤔 Additional -  Journal Analysis Tool
 
 The Journal Analysis Tool is a new feature that helps users gain insights from their journal entries. It analyzes the text and generates thoughtful, open-ended questions to promote deeper reflection.
 
@@ -72,13 +106,13 @@ The Journal Analysis Tool is a new feature that helps users gain insights from t
 ### Running the Journal Analyzer
 
 ```bash
-python journal_analyzer.py test_journal_entry.txt
+uv run ai_agent/run.py tmp/journal_entry.txt
 ```
 
 You can also specify a custom output file:
 
 ```bash
-python journal_analyzer.py test_journal_entry.txt -o my_analysis.md
+uv run ai_agent/run.py tmp/journal_entry.txt -o tmp/my_analysis.md
 ```
 
 ### Sample Output
@@ -91,13 +125,4 @@ The analyzer generates a Markdown file with sections for:
 - Reflection questions with context
 - Summary with insights
 
-## 📄 Other Tasks
-
-Current UX issues and proposed solutions
-- [Review Summariser for Ops Team](REVIEW_SUMMARISER.md) - Documentation for the review summarization feature
-- [AI Feature Suggestion](AI_ROADMAP.md) - Future features and AI integration plans
-- [User Experience Issues](User_Experience_Issues.md) -
-
 ---
-
-<p align="center">Made with ❤️ by <a href="https://github.com/codeit13">Sumit Chauhan</a></p>

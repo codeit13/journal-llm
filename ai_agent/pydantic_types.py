@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
-# ── 1. Journal Entry ──────────────────────────────────────────────────────────────
 
 class JournalEntry(BaseModel):
     """Represents a user's journal entry with parsed content and metadata."""
@@ -13,7 +12,6 @@ class JournalEntry(BaseModel):
     activities: List[str] = Field(default_factory=list, description="Activities mentioned in the entry")
     locations: List[str] = Field(default_factory=list, description="Places mentioned in the entry")
 
-# ── 2. Journal Analysis ────────────────────────────────────────────────────────────
 
 class MoodAnalysis(BaseModel):
     """Analysis of the user's mood based on their journal entry."""
@@ -33,7 +31,6 @@ class ReflectionQuestions(BaseModel):
     questions: List[str] = Field(..., description="List of 5 open-ended questions")
     question_context: List[str] = Field(..., description="Context or reasoning behind each question")
 
-# ── 3. Journal Response ────────────────────────────────────────────────────────────
 
 class JournalResponse(BaseModel):
     """Complete response to a journal entry, including analysis and questions."""

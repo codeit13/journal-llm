@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Optional
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from langgraph.graph import StateGraph, START, END
-from ai_agent.llm import create_llm
+from ai_agent.utils.llm import create_llm
 from ai_agent.pydantic_types import JournalEntry, MoodAnalysis, TopicAnalysis, ReflectionQuestions, JournalResponse
 
 def parse_journal_entry_node(state: Dict[str, Any]) -> Dict[str, Any]:

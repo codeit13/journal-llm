@@ -1,6 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from config import settings
+from ai_agent.utils.config import settings
 
 
 def create_llm():

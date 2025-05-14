@@ -7,6 +7,10 @@ This script provides a simple command-line interface to the journal analysis fun
 import sys
 import os
 import argparse
+
+# Add the parent directory to the path so we can import from ai_agent
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from ai_agent.graph import run_journal_analyzer
 
 def main():
@@ -20,8 +24,8 @@ def main():
     )
     parser.add_argument(
         "-o", "--output", 
-        default="journal_analysis.md",
-        help="Path to save the analysis output (default: journal_analysis.md)"
+        default="tmp/my_analysis.md",
+        help="Path to save the analysis output (default: tmp/my_analysis.md)"
     )
     args = parser.parse_args()
     
@@ -58,7 +62,7 @@ def main():
         # Show the first question as a preview
         if result['reflection_questions']['questions']:
             print(f"\nSample question: {result['reflection_questions']['questions'][0]}")
-            print("\nOpen the output file to see all questions and the full analysis.")
+            print("\nOpen the output file to see all questions and the full analysis." + args.output)
     
     except Exception as e:
         print(f"Error analyzing journal entry: {str(e)}")

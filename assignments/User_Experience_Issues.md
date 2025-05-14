@@ -26,10 +26,12 @@ The Intellect app has an issue where popups opened on a second screen don't auto
 
 ### Visual References
 
-![Popup Overflow Issue 1](images/popup-overflow-1.jpg)
+![Popup Overflow Issue 1](../images/popup-overflow-1.jpg)
 
-![Popup Overflow Issue 2](images/popup-overflow-2.jpg)
+![Popup Overflow Issue 2](../images/popup-overflow-2.jpg)
 
 ### Proposed Solution
 
 Implement some sort of navigation event listener that might be present in react-native, which automatically closes any open popups when the user navigates to a different screen, especially when returning to the home screen.
+
+For more information on Journal-LLM, see the [main README](../README.md).

@@ -10,7 +10,7 @@ Automate extraction and summarisation of user reviews for the Operations Team:
 
 ## Architecture
 
-![Review Summariser Architecture](images/review-architecture.png)
+![Review Summariser Architecture](../images/review-architecture.png)
 
 ## Components
 
@@ -77,5 +77,5 @@ Automate extraction and summarisation of user reviews for the Operations Team:
 - **Priority classification** based on content
 - **Summary generation** for daily and monthly reports
 
-For more information on Journal-LLM, see the [main README](README.md).
+For more information on Journal-LLM, see the [main README](../README.md).
 

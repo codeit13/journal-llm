@@ -11,11 +11,11 @@ class Settings:
     OPENAI_API_KEY: Optional[str] = os.environ.get("OPENAI_API_KEY")
     
     # Default model settings
-    DEFAULT_MODEL: str = "gpt-3.5-turbo"
+    DEFAULT_MODEL: str = "gpt-4o-mini"
     DEFAULT_TEMPERATURE: float = 0.7
     
     # Application paths
-    TMP_DIR: str = os.path.join(os.path.dirname(__file__), "tmp")
+    TMP_DIR: str = os.path.join(os.getcwd(), "tmp")
     
     def __init__(self):
         """Initialize settings and create required directories."""
