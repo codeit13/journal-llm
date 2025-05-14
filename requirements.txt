@@ -1,0 +1,14 @@
+# Core dependencies
+langchain_openai
+langchain-core
+langchain
+python-dotenv
+pydantic
+
+# Graph-based agent framework
+langgraph
+
+# Model dependencies
+transformers
+accelerate
+bitsandbytes

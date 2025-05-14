@@ -1,0 +1,5 @@
+journal
+*.pyc
+__pycache__
+*.log
+.env
