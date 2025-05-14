@@ -6,7 +6,7 @@ Currently, when asking users about their mood, the app displays static emoji ima
 
 ### Visual Reference
 
-![Static Emoji](images/static-emoji.jpg)
+<img src="../images/static-emoji.jpg" alt="Static Emoji" height="400">
 
 ### Proposed Solutions
 
@@ -26,12 +26,12 @@ The Intellect app has an issue where popups opened on a second screen don't auto
 
 ### Visual References
 
-![Popup Overflow Issue 1](../images/popup-overflow-1.jpg)
+<img src="../images/popup-overflow-1.jpg" alt="Popup Overflow Issue 1" height="400">
 
-![Popup Overflow Issue 2](../images/popup-overflow-2.jpg)
+<img src="../images/popup-overflow-2.jpg" alt="Popup Overflow Issue 2" height="400">
 
 ### Proposed Solution
 
 Implement some sort of navigation event listener that might be present in react-native, which automatically closes any open popups when the user navigates to a different screen, especially when returning to the home screen.
 
-For more information on Journal-LLM, see the [main README](../README.md).
+For more information on Journal-LLM, see the <a href="../README.md" target="_blank">main README</a>.

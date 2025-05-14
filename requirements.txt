@@ -11,4 +11,6 @@ langgraph
 # Model dependencies
 transformers
 accelerate
+torch
 bitsandbytes
+langchain-huggingface

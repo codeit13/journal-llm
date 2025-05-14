@@ -92,9 +92,9 @@ uv run run_llm.py
 
 ---
 
-## 🤔 Additional -  Journal Analysis Tool
+## 🤔 Running this Fine-Tuned Journal-LLM in LangGraph
 
-The Journal Analysis Tool is a new feature that helps users gain insights from their journal entries. It analyzes the text and generates thoughtful, open-ended questions to promote deeper reflection.
+The Journal Analysis Tool is a new feature that helps users gain insights from their journal entries. It analyzes the text and generates thoughtful, open-ended questions to promote deeper reflection using this Journal-LLM
 
 ### Features
 
@@ -105,8 +105,14 @@ The Journal Analysis Tool is a new feature that helps users gain insights from t
 
 ### Running the Journal Analyzer
 
+> Uses `thesleebit/journal-llm-v2` our fine tuned model
 ```bash
-uv run ai_agent/run.py tmp/journal_entry.txt
+uv run ai_agent/run.py tmp/journal_entry.txt --model huggingface
+```
+
+> Uses OpenAI `gpt-4o-mini` model
+```bash
+uv run ai_agent/run.py tmp/journal_entry.txt --model openai
 ```
 
 You can also specify a custom output file:

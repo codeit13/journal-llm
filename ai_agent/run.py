@@ -3,6 +3,7 @@
 Journal Analyzer - A tool for analyzing and generating reflective questions from journal entries.
 
 This script provides a simple command-line interface to the journal analysis functionality.
+Supports both OpenAI and fine-tuned Hugging Face models.
 """
 import sys
 import os
@@ -12,6 +13,7 @@ import argparse
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from ai_agent.graph import run_journal_analyzer
+from ai_agent.utils.config import settings, ModelProvider
 
 def main():
     """Main entry point for the journal analyzer."""
@@ -27,7 +29,21 @@ def main():
         default="tmp/my_analysis.md",
         help="Path to save the analysis output (default: tmp/my_analysis.md)"
     )
+    parser.add_argument(
+        "--model",
+        choices=["openai", "huggingface"],
+        default="openai",
+        help="Model provider to use (default: openai)"
+    )
     args = parser.parse_args()
+    
+    # Set the model provider based on command line argument
+    if args.model == "openai":
+        settings.MODEL_PROVIDER = ModelProvider.OPENAI
+        print(f"Using OpenAI model: {settings.OPENAI_MODEL}")
+    else:
+        settings.MODEL_PROVIDER = ModelProvider.HUGGINGFACE
+        print(f"Using Hugging Face model: {settings.HUGGINGFACE_MODEL_ID}")
     
     # Check if the journal file exists
     if not os.path.exists(args.journal_path):
@@ -62,7 +78,7 @@ def main():
         # Show the first question as a preview
         if result['reflection_questions']['questions']:
             print(f"\nSample question: {result['reflection_questions']['questions'][0]}")
-            print("\nOpen the output file to see all questions and the full analysis." + args.output)
+            print(f"\nOpen the output file to see all questions and the full analysis: {args.output}")
     
     except Exception as e:
         print(f"Error analyzing journal entry: {str(e)}")
