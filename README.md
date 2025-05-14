@@ -1,7 +1,7 @@
 # 📔 Journal-LLM
 
-[![Hugging Face](https://img.shields.io/badge/🤗_Hugging_Face-journal--llm--v2-yellow)](https://huggingface.co/thesleebit/journal-llm-v2)
-[![Python](https://img.shields.io/badge/Python-3.12+-blue)](https://www.python.org/)
+<a href="https://huggingface.co/thesleebit/journal-llm-v2" target="_blank">![Hugging Face](https://img.shields.io/badge/🤗_Hugging_Face-journal--llm--v2-yellow)</a>
+<a href="https://www.python.org/" target="_blank">![Python](https://img.shields.io/badge/Python-3.12+-blue)</a>
 
 > A fine-tuned language model for journal-related tasks
 
@@ -15,8 +15,8 @@ Journal-LLM is a specialized language model fine-tuned on journal data. The mode
 
 | Resource | Link |
 |:-------:|:----:|
-| <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" height="30" width="30" alt="Hugging Face Logo"> | [**Fine-tuned Model pushed to Hugging Face**](https://huggingface.co/thesleebit/journal-llm-v2) |
-| <img src="https://colab.research.google.com/img/colab_favicon_256px.png" height="30" width="30" alt="Google Colab Logo"> | [**Training Notebook on Google Colab**](https://colab.research.google.com/drive/1NlqXAOOxmmBBQcWlKoC-XnXrmWXsYEXx?usp=sharing) |
+| <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" height="30" width="30" alt="Hugging Face Logo"> | <a href="https://huggingface.co/thesleebit/journal-llm-v2" target="_blank">**Fine-tuned Model pushed to Hugging Face**</a> |
+| <img src="https://colab.research.google.com/img/colab_favicon_256px.png" height="30" width="30" alt="Google Colab Logo"> | <a href="https://colab.research.google.com/drive/1NlqXAOOxmmBBQcWlKoC-XnXrmWXsYEXx?usp=sharing" target="_blank">**Training Notebook on Google Colab**</a> |
 
 </div>
 
@@ -81,14 +81,14 @@ uv run run_llm.py
 
 ## 📄 Other Tasks
 
-- [Review Summariser for Ops Team](assignments/REVIEW_SUMMARISER.md) - Documentation for the review summarization feature
-- [AI Feature Suggestion](assignments/AI_ROADMAP.md) - Future features and AI integration plans
-- [User Experience Issues](assignments/User_Experience_Issues.md) - Current UX issues and proposed solutions
+- <a href="assignments/REVIEW_SUMMARISER.md" target="_blank">Review Summariser for Ops Team</a> - Documentation for the review summarization feature
+- <a href="assignments/AI_ROADMAP.md" target="_blank">AI Feature Suggestion</a> - Future features and AI integration plans
+- <a href="assignments/User_Experience_Issues.md" target="_blank">User Experience Issues</a> - Current UX issues and proposed solutions
 
 
 ---
 
-<p align="center">Made with ❤️ by <a href="https://github.com/codeit13">Sumit Chauhan</a></p>
+<p align="center">Made with ❤️ by <a href="https://github.com/codeit13" target="_blank">Sumit Chauhan</a></p>
 
 ---
 
