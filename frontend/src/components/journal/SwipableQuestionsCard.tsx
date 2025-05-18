@@ -221,10 +221,10 @@ const SwipableQuestionsCard: React.FC<SwipableQuestionsCardProps> = ({
         
         // Only update if we have a final transcript
         if (finalTranscript) {
-          // Update the current answer with the transcribed text
+          // Update the current answer with the transcribed text - append to existing text
           setCurrentAnswer(prev => {
-            const trimmedPrev = prev.trim();
-            return trimmedPrev ? trimmedPrev + ' ' + finalTranscript : finalTranscript;
+            // Simply append the new text to whatever is already there
+            return prev + finalTranscript;
           });
         }
       };

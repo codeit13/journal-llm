@@ -111,10 +111,10 @@ const DailySummaryInput: React.FC<DailySummaryInputProps> = ({
         
         // Only update if we have a final transcript
         if (finalTranscript) {
-          // Update the journal entry with the transcribed text
+          // Update the journal entry with the transcribed text - append to existing text
           setJournalEntry((prev: string) => {
-            const trimmedPrev = prev.trim();
-            return trimmedPrev ? trimmedPrev + ' ' + finalTranscript : finalTranscript;
+            // Simply append the new text to whatever is already there
+            return prev + finalTranscript;
           });
         }
       };
