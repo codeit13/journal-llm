@@ -24,6 +24,10 @@ export interface JournalState {
   journalHistory: { entry: string; timestamp: Date }[];
   journals: Journal[];
   error: string | null;
+  currentJournalId: string | null;
+  answers: { questionId: string; answer: string }[];
+  mood: string | null;
+  mood_score: number | null;
 }
 
 const initialState: JournalState = {
@@ -34,6 +38,10 @@ const initialState: JournalState = {
   journalHistory: [],
   journals: [],
   error: null,
+  currentJournalId: null,
+  answers: [],
+  mood: null,
+  mood_score: null,
 };
 
 // Fallback questions in case the API fails
@@ -99,7 +107,7 @@ export const fetchJournals = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       // Attempt to make the API call
-      const response = await fetch('http://localhost:8000/api/journals', {
+      const response = await fetch('http://0.0.0.0:8003/api/journals', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -143,19 +151,20 @@ export const fetchJournals = createAsyncThunk(
   }
 );
 
-export const submitJournalEntry = createAsyncThunk(
-  'journal/submitEntry',
+
+
+export const analyzeJournalEntry = createAsyncThunk(
+  'journal/analyzeEntry',
   async (content: string, { rejectWithValue }) => {
     try {
+      // Create form data for the request
+      const formData = new FormData();
+      formData.append('journal_text', content);
+      
       // Attempt to make the API call
-      const response = await fetch('http://localhost:8000/api/journal', {
+      const response = await fetch('http://0.0.0.0:8003/api/journal-analysis', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // You might need to add authentication headers here if required
-          // 'Authorization': 'Bearer YOUR_TOKEN_HERE',
-        },
-        body: JSON.stringify({ content }),
+        body: formData,
       });
 
       // If the response is successful, process it normally
@@ -168,7 +177,13 @@ export const submitJournalEntry = createAsyncThunk(
           text: q
         }));
         
-        return { questions, entry: content };
+        return { 
+          questions, 
+          entry: content,
+          journalId: data.journalId, // Store the journal ID returned from the backend
+          mood: data.mood,
+          mood_score: data.mood_score
+        };
       } 
       
       // Handle specific error cases
@@ -203,69 +218,146 @@ export const submitJournalEntry = createAsyncThunk(
   }
 );
 
+export const submitJournalAnswers = createAsyncThunk(
+  'journal/submitAnswers',
+  async (_, { getState, rejectWithValue }) => {
+    const state = getState() as { journal: JournalState };
+    const { journalEntry, followUpQuestions, answers, mood, mood_score, currentJournalId } = state.journal;
+    
+    try {
+      // Check if we have a journal ID from the analysis step
+      if (!currentJournalId) {
+        return rejectWithValue('No journal ID found. Please submit a journal entry first.');
+      }
+      
+      // Format answers for the API
+      const formattedAnswers = answers.map((answer, index) => ({
+        question_index: index,
+        question: followUpQuestions[index]?.text || `Question ${index + 1}`,
+        answer: answer.answer
+      }));
+      
+      // Submit the answers to the journal entry
+      const response = await fetch('http://0.0.0.0:8003/api/journal/answers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          journalId: currentJournalId,
+          answers: formattedAnswers
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.detail || 'Failed to submit answers');
+      }
+      
+      const data = await response.json();
+      return { ...data, journalId: currentJournalId };
+    } catch (error) {
+      console.error('API Error:', error);
+      return rejectWithValue('Network error. Could not submit answers.');
+    }
+  }
+);
+
 const journalSlice = createSlice({
   name: 'journal',
   initialState,
   reducers: {
-    setJournalEntry: (state, action: PayloadAction<string>) => {
-      state.journalEntry = action.payload;
+    setJournalEntry(state, action: PayloadAction<string>) {
+      state.journalEntry = action.payload.replace('...', '');
     },
-    clearFollowUpQuestions: (state) => {
+    clearFollowUpQuestions(state) {
       state.followUpQuestions = [];
     },
-    startNewJournal: (state) => {
+    startNewJournal(state) {
       state.journalEntry = '';
       state.followUpQuestions = [];
-      state.error = null;
+      state.currentJournalId = null;
+      state.answers = [];
+      state.mood = null;
+      state.mood_score = null;
     },
-    addQuestionToEntry: (state, action: PayloadAction<Question>) => {
-      state.journalEntry = `${state.journalEntry}\n\n${action.payload.text}`;
-      state.followUpQuestions = state.followUpQuestions.filter(
-        q => q.id !== action.payload.id
-      );
+    addQuestionToEntry(state, action: PayloadAction<Question>) {
+      state.journalEntry += `\n\n${action.payload.text}\n`;
+    },
+    addAnswer(state, action: PayloadAction<{questionId: string, answer: string}>) {
+      const existingAnswerIndex = state.answers.findIndex(a => a.questionId === action.payload.questionId);
+      
+      if (existingAnswerIndex >= 0) {
+        // Update existing answer
+        state.answers[existingAnswerIndex].answer = action.payload.answer;
+      } else {
+        // Add new answer
+        state.answers.push(action.payload);
+      }
     },
   },
   extraReducers: (builder) => {
     builder
-      // Handle fetchJournals actions
+      // Handle fetchJournals
       .addCase(fetchJournals.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(fetchJournals.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.journals = action.payload.journals || [];
-        if (action.payload.usedFallback) {
-          state.error = action.payload.errorMessage || null;
-        } else {
-          state.error = null;
+        state.journals = action.payload.journals;
+        if (action.payload.errorMessage) {
+          state.error = action.payload.errorMessage;
         }
       })
       .addCase(fetchJournals.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || 'Failed to fetch journals';
-        // Fallback to default journals if API fails
-        state.journals = fallbackJournals;
       })
-      // Handle submitJournalEntry actions
-      .addCase(submitJournalEntry.pending, (state) => {
+      
+      // Handle analyzeJournalEntry
+      .addCase(analyzeJournalEntry.pending, (state) => {
         state.isSubmitting = true;
         state.error = null;
       })
-      .addCase(submitJournalEntry.fulfilled, (state, action) => {
+      .addCase(analyzeJournalEntry.fulfilled, (state, action) => {
         state.isSubmitting = false;
         state.followUpQuestions = action.payload.questions || [];
-        state.journalHistory = [
-          ...state.journalHistory,
-          { entry: state.journalEntry, timestamp: new Date() }
-        ];
-        state.journalEntry = '';
+        state.journalHistory.push({
+          entry: action.payload.entry,
+          timestamp: new Date()
+        });
+        state.currentJournalId = action.payload.journalId || null;
+        state.mood = action.payload.mood || null;
+        state.mood_score = action.payload.mood_score || null;
+        
+        if (action.payload.usedFallback) {
+          state.error = action.payload.errorMessage || 'Something went wrong. Using default questions.';
+        } else {
+          state.error = null;
+        }
       })
-      .addCase(submitJournalEntry.rejected, (state, action) => {
+      .addCase(analyzeJournalEntry.rejected, (state, action) => {
         state.isSubmitting = false;
-        state.error = action.error.message || 'Failed to submit journal entry';
-        // Fallback to default questions if API fails
-        state.followUpQuestions = fallbackQuestions;
+        state.error = action.payload as string || 'Failed to analyze journal entry';
+      })
+      
+      // Handle submitJournalAnswers
+      .addCase(submitJournalAnswers.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(submitJournalAnswers.fulfilled, (state) => {
+        state.isSubmitting = false;
+        // Clear answers after successful submission
+        state.answers = [];
+        // Optionally clear other state related to the current journal
+        state.currentJournalId = null;
+        state.followUpQuestions = [];
+      })
+      .addCase(submitJournalAnswers.rejected, (state, action) => {
+        state.isSubmitting = false;
+        state.error = action.error.message || 'Failed to submit answers';
       });
   },
 });
@@ -273,13 +365,14 @@ const journalSlice = createSlice({
 // Export actions
 export const { 
   setJournalEntry, 
-  clearFollowUpQuestions, 
+  clearFollowUpQuestions,
   startNewJournal,
-  addQuestionToEntry 
+  addQuestionToEntry,
+  addAnswer
 } = journalSlice.actions;
 
 // Export the reducer as default
 export default journalSlice.reducer;
 
 // Export the async thunks
-export { submitJournalEntry as submitJournalEntryAsync };
+export { submitJournalAnswers as submitJournalAnswersAsync, analyzeJournalEntry as analyzeJournalEntryAsync };

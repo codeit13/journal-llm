@@ -7,7 +7,7 @@ console.log(import.meta.env.VITE_NODE_ENV);
 
 const API_BASE_URL = import.meta.env.VITE_NODE_ENV === 'production' 
   ? 'https://recruiter-backend.sleebit.com' 
-  : 'http://localhost:8005';
+  : 'http://0.0.0.0:8003';
 
 // Alternative approach using direct environment variable
 // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';

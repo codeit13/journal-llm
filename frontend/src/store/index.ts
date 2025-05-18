@@ -3,7 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import agentReducer from './slices/agentSlice';
 import themeReducer from './slices/themeSlice';
 import journalReducer, { 
-  submitJournalEntryAsync as submitJournalEntry,
+  analyzeJournalEntryAsync as analyzeJournalEntry,
   setJournalEntry,
   clearFollowUpQuestions,
   startNewJournal,
@@ -40,7 +40,7 @@ export type AppDispatch = typeof store.dispatch;
 
 // Re-export actions and types
 export {
-  submitJournalEntry,
+  analyzeJournalEntry,
   setJournalEntry,
   clearFollowUpQuestions,
   startNewJournal,

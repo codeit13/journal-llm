@@ -5,7 +5,8 @@ from langchain_core.messages import BaseMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import Runnable
 from langchain_openai import ChatOpenAI
-from ai_agent.utils.config import settings, ModelProvider
+from langchain_ollama.llms import OllamaLLM
+from config import settings, ModelProvider
 
 # Import Hugging Face components conditionally to avoid import errors if not installed
 try:
@@ -33,6 +34,8 @@ def create_llm(model_provider: Optional[ModelProvider] = None) -> BaseLLM:
         return create_openai_llm()
     elif provider == ModelProvider.HUGGINGFACE:
         return create_huggingface_llm()
+    elif provider == ModelProvider.OLLAMA:
+        return create_ollama_llm()
     else:
         raise ValueError(f"Unsupported model provider: {provider}")
 
@@ -46,11 +49,25 @@ def create_openai_llm() -> ChatOpenAI:
     """
     llm = ChatOpenAI(
         model=settings.OPENAI_MODEL,
-        temperature=settings.OPENAI_TEMPERATURE,
+        temperature=0.6,
         api_key=settings.OPENAI_API_KEY
     )
     return llm
 
+def create_ollama_llm() -> ChatOpenAI:
+    """
+    Create an Ollama language model instance.
+    
+    Returns:
+        ChatOpenAI: A configured Ollama language model instance.
+    """
+    print("Creating Ollama LLM: ", settings.OLLAMA_BASE_URL, settings.OLLAMA_MODEL)
+    llm = OllamaLLM(
+        model=settings.OLLAMA_MODEL,
+        temperature=0.6,
+        base_url=settings.OLLAMA_BASE_URL
+    )
+    return llm
 
 def create_huggingface_llm() -> BaseLLM:
     """

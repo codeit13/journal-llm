@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -33,7 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { 
-  submitJournalEntry,
+  analyzeJournalEntry,
   setJournalEntry, 
   fetchJournals,
   startNewJournal,
@@ -89,8 +89,12 @@ const Journaling = () => {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   
   // Fetch journals when component mounts
+  const fetchedRef = useRef(false);
   useEffect(() => {
-    dispatch(fetchJournals());
+    if (!fetchedRef.current) {
+      fetchedRef.current = true;
+      dispatch(fetchJournals());
+    }
   }, [dispatch]);
   
   // Handle creating a new journal entry
@@ -101,13 +105,13 @@ const Journaling = () => {
     }
 
     try {
-      const resultAction = await dispatch(submitJournalEntry(journalEntry));
-      if (submitJournalEntry.fulfilled.match(resultAction)) {
+      const resultAction = await dispatch(analyzeJournalEntry(journalEntry));
+      if (analyzeJournalEntry.fulfilled.match(resultAction)) {
         setShowNewJournalDialog(false);
         toast.success('Journal entry created successfully!');
         // Refresh journals list
         dispatch(fetchJournals());
-      } else if (submitJournalEntry.rejected.match(resultAction) && resultAction.payload) {
+      } else if (analyzeJournalEntry.rejected.match(resultAction) && resultAction.payload) {
         toast.error(resultAction.payload as string);
       }
     } catch (error) {
