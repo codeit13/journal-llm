@@ -30,6 +30,10 @@ export interface JournalState {
   mood_score: number | null;
 }
 
+const API_BASE_URL = import.meta.env.VITE_NODE_ENV === 'production' 
+  ? 'https://journal-backend.sleebit.com' 
+  : 'http://0.0.0.0:8003';
+
 const initialState: JournalState = {
   journalEntry: '',
   isSubmitting: false,
@@ -107,7 +111,7 @@ export const fetchJournals = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       // Attempt to make the API call
-      const response = await fetch('http://0.0.0.0:8003/api/journals', {
+      const response = await fetch(`${API_BASE_URL}/api/journals`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +166,7 @@ export const analyzeJournalEntry = createAsyncThunk(
       formData.append('journal_text', content);
       
       // Attempt to make the API call
-      const response = await fetch('http://0.0.0.0:8003/api/journal-analysis', {
+      const response = await fetch(`${API_BASE_URL}/api/journal-analysis`, {
         method: 'POST',
         body: formData,
       });
@@ -238,7 +242,7 @@ export const submitJournalAnswers = createAsyncThunk(
       }));
       
       // Submit the answers to the journal entry
-      const response = await fetch('http://0.0.0.0:8003/api/journal/answers', {
+      const response = await fetch(`${API_BASE_URL}/api/journal/answers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

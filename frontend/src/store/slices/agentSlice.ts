@@ -6,7 +6,7 @@ import type { RootState } from '../index';
 console.log(import.meta.env.VITE_NODE_ENV);
 
 const API_BASE_URL = import.meta.env.VITE_NODE_ENV === 'production' 
-  ? 'https://recruiter-backend.sleebit.com' 
+  ? 'https://journal-backend.sleebit.com' 
   : 'http://0.0.0.0:8003';
 
 // Alternative approach using direct environment variable
