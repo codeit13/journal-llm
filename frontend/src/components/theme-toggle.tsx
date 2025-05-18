@@ -33,7 +33,7 @@ export function ThemeToggle() {
       variant="outline" 
       size="icon" 
       onClick={cycleTheme}
-      className="relative overflow-hidden transition-all duration-500 ease-in-out"
+      className="relative overflow-hidden transition-all duration-500 ease-in-out cursor-pointer"
     >
       {/* Sun icon */}
       <Sun 

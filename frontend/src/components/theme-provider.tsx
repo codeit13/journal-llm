@@ -18,7 +18,7 @@ export function ThemeProvider({
   children, 
   defaultTheme = "dark",
   attribute = "class",
-  enableSystem = true,
+  enableSystem = false, // Disable system theme by default
   ...props 
 }: ThemeProviderProps) {
   return (
@@ -57,11 +57,11 @@ function ThemeSynchronizer({ children }: { children: React.ReactNode }) {
     }
   }, [themeMode, theme, setTheme]);
   
-  // Set initial theme based on system preference if not set
+  // Set initial theme to dark if not set
   useEffect(() => {
     if (!themeMode && !activeTheme && typeof window !== 'undefined') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const defaultTheme = prefersDark ? 'dark' : 'light';
+      // Always use dark theme for first-time users
+      const defaultTheme = 'dark';
       setTheme(defaultTheme);
       dispatch(setThemeMode(defaultTheme));
     }

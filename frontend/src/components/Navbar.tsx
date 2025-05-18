@@ -22,7 +22,7 @@ export default function Navbar() {
                 <div className="space-y-4 py-4">
                   <div className="px-4 py-2">
                     <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
-                      Mental Health
+                      Mental Health App
                     </h2>
                     <div className="space-y-1">
                       <Navigation className="flex flex-col" />
@@ -33,7 +33,7 @@ export default function Navbar() {
             </SheetContent>
           </Sheet>
           <Link to="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl ml-2">Mental Health</span>
+            <span className="font-bold text-xl ml-2">Mental Health App</span>
           </Link>
         </div>
         <div className="flex items-center gap-6">

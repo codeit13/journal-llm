@@ -6,22 +6,21 @@ import {
   analyzeJournalEntryAsync,
   submitJournalAnswersAsync,
   setJournalEntry as setReduxJournalEntry,
-  fetchJournals,
   startNewJournal,
   addAnswer,
-  type Journal
 } from '../store/slices/journalSlice';
 import type { RootState, AppDispatch } from '../store';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
+import { Badge } from '../components/ui/badge';
+import { Trophy, Heart, Brain, PenLine } from 'lucide-react';
 
 // Import our modular components
 import JournalHeader from "../components/journal/JournalHeader";
 import DailySummaryInput from "../components/journal/DailySummaryInput";
 import SwipableQuestionsCard from "../components/journal/SwipableQuestionsCard";
-
-// Import UI components
-import { Button } from "../components/ui/button";
-import { Brain } from 'lucide-react';
 
 export default function RunAgent() {
   // Redux setup
@@ -38,11 +37,31 @@ export default function RunAgent() {
   // Get illustration colors based on question index or current step
   const getIllustrationColors = (index: number = 0) => {
     const colors = [
-      { primary: 'bg-teal-500/40', secondary: 'bg-teal-300/60', tertiary: 'bg-teal-200/80' },
-      { primary: 'bg-amber-500/40', secondary: 'bg-amber-300/60', tertiary: 'bg-amber-200/80' },
-      { primary: 'bg-blue-500/40', secondary: 'bg-blue-300/60', tertiary: 'bg-blue-200/80' },
-      { primary: 'bg-purple-500/40', secondary: 'bg-purple-300/60', tertiary: 'bg-purple-200/80' },
-      { primary: 'bg-green-500/40', secondary: 'bg-green-300/60', tertiary: 'bg-green-200/80' }
+      { 
+        primary: 'dark:bg-teal-500/40 bg-teal-500/30', 
+        secondary: 'dark:bg-teal-300/60 bg-teal-400/40', 
+        tertiary: 'dark:bg-teal-200/80 bg-teal-500/30' 
+      },
+      { 
+        primary: 'dark:bg-amber-500/40 bg-amber-500/30', 
+        secondary: 'dark:bg-amber-300/60 bg-amber-400/40', 
+        tertiary: 'dark:bg-amber-200/80 bg-amber-500/30' 
+      },
+      { 
+        primary: 'dark:bg-blue-500/40 bg-blue-500/30', 
+        secondary: 'dark:bg-blue-300/60 bg-blue-400/40', 
+        tertiary: 'dark:bg-blue-200/80 bg-blue-500/30' 
+      },
+      { 
+        primary: 'dark:bg-purple-500/40 bg-purple-500/30', 
+        secondary: 'dark:bg-purple-300/60 bg-purple-400/40', 
+        tertiary: 'dark:bg-purple-200/80 bg-purple-500/30' 
+      },
+      { 
+        primary: 'dark:bg-green-500/40 bg-green-500/30', 
+        secondary: 'dark:bg-green-300/60 bg-green-400/40', 
+        tertiary: 'dark:bg-green-200/80 bg-green-500/30' 
+      }
     ];
     
     return colors[index % colors.length];
@@ -58,11 +77,6 @@ export default function RunAgent() {
       "How did your actions today align with your personal values?",
       "What would you like to focus on or improve tomorrow?"
     ];
-
-  // Load journals on component mount
-  useEffect(() => {
-    dispatch(fetchJournals());
-  }, [dispatch]);
 
   // Handle journal entry change
   const handleJournalEntryChange = (entry: string | ((prev: string) => string)) => {
@@ -120,8 +134,8 @@ export default function RunAgent() {
     
     // Move to next question if not the last one
     if (questionIndex < questions.length - 1) {
-      setDirection('right');
       setCurrentQuestionIndex(questionIndex + 1);
+      setDirection('right');
     } else {
       // If it's the last question, complete the journal
       handleComplete(newAnswers);
@@ -147,14 +161,10 @@ export default function RunAgent() {
           setCurrentStep('completed');
           toast.success("Journal completed and saved!");
           
-          // Reset for a new journal entry after a delay
-          setTimeout(() => {
-            dispatch(startNewJournal());
-            setCurrentStep('input');
-            setAnswers([]);
-            // Reset the ref for next time
-            hasHandledCompleteRef.current = false;
-          }, 2000);
+          // No longer automatically resetting - the user will close the celebration card
+          // and click 'Continue Journaling' when they're ready
+          // This allows the celebration card to remain visible
+          hasHandledCompleteRef.current = false;
         } else {
           // Reset the ref if there was an error
           hasHandledCompleteRef.current = false;
@@ -228,19 +238,45 @@ export default function RunAgent() {
       {/* Animated bubble background for the entire UI */}
       <div className="absolute inset-0 overflow-hidden z-0">
         {animatedBubbles}
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/80 to-zinc-900/80 backdrop-blur-[4px]" />
+        <div className="absolute inset-0 bg-gradient-to-b dark:from-zinc-900/80 dark:to-zinc-900/80 from-white/90 to-slate-100/90 backdrop-blur-[4px]" />
       </div>
       
       {/* Fixed Header */}
       <JournalHeader 
-        title="AI powered Journal" 
-        subtitle="Reflect on your day and gain AI insights through guided journaling"
+        title="Journal AI" 
+        subtitle="Review your day with guided journaling to reveal AI insights"
       />
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col items-center justify-start h-fit pt-8 px- relative z-10">
+      <div className="flex-1 flex flex-col items-center justify-start h-fit pt-8 relative z-10">
         
-        
+        {/* Question Counter and Navigation Dots */}
+        {/* {currentStep === 'questions' && (
+          <div className="mb-4 flex flex-col items-center">
+            <div className="text-slate-600 dark:text-zinc-400 text-sm font-medium">
+              {currentQuestionIndex + 1} / {questions.length}
+            </div>
+            
+            <div className="flex justify-center gap-1.5 mt-2">
+              {questions.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setDirection(index > currentQuestionIndex ? 'right' : 'left');
+                    setCurrentQuestionIndex(index);
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${currentQuestionIndex === index 
+                    ? 'bg-teal-600 dark:bg-teal-400 w-4 shadow-sm' 
+                    : answers[index]?.trim()
+                      ? 'bg-teal-500/70 dark:bg-teal-400/70 hover:bg-teal-500 dark:hover:bg-teal-400'
+                      : 'bg-slate-400 dark:bg-zinc-600 hover:bg-slate-500 dark:hover:bg-zinc-500'}`}
+                  aria-label={`Go to question ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        )} */}
+
         {/* Swipeable Card Area */}
         <div className="w-full max-w-md">
           <AnimatePresence mode="wait">
@@ -285,58 +321,89 @@ export default function RunAgent() {
               </motion.div>
             )}
             
-            {/* Completed Step */}
+            {/* Completed Step with Enhanced Celebration UI */}
             {currentStep === 'completed' && (
               <motion.div
                 key="completed"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-zinc-800 p-6 rounded-lg border border-zinc-700 shadow-md text-center w-full"
+                className="w-full max-w-md"
               >
-                <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-2xl font-bold text-teal-400 mb-2">Journal Complete!</h2>
-                <p className="text-zinc-300 mb-6">Your journal entry has been saved successfully.</p>
-                <Button 
-                  onClick={() => {
-                    dispatch(startNewJournal());
-                    setCurrentStep('input');
-                  }}
-                  className="bg-teal-600 hover:bg-teal-700 text-white w-full rounded-full"
+                <motion.div 
+                  className="bg-white dark:bg-zinc-900 p-8 rounded-xl shadow-xl text-center relative overflow-hidden border border-slate-200 dark:border-zinc-800"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "tween", duration: 0.3 }}
                 >
-                  Start New Journal Entry
-                </Button>
+                  {/* Decorative elements */}
+                  <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-gradient-to-br from-teal-400/20 to-blue-500/20 blur-xl"></div>
+                  <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-gradient-to-br from-purple-400/20 to-pink-500/20 blur-xl"></div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex justify-center items-center gap-3 mb-4">
+                      <motion.div 
+                        className="text-5xl"
+                        initial={{ rotate: -15 }}
+                        animate={{ rotate: 0 }}
+                        transition={{ type: "tween", duration: 0.3 }}
+                      >
+                        🎉
+                      </motion.div>
+                      <motion.div 
+                        className="text-5xl"
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", delay: 0.1 }}
+                      >
+                        🧠
+                      </motion.div>
+                    </div>
+                    
+                    <h2 className="text-2xl font-bold text-teal-600 dark:text-teal-400 mb-2">Reflection Complete!</h2>
+                    <p className="text-slate-600 dark:text-slate-300 mb-4">Your journal entry has been saved successfully.</p>
+                    
+                    <div className="bg-slate-50 dark:bg-zinc-800/50 p-4 rounded-lg mb-6">
+                      <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 flex items-center justify-center">
+                        <Brain className="h-4 w-4 mr-1 text-purple-500" /> Mental Wellness Insight
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-300 italic">
+                        "Regular journaling helps reduce stress and anxiety by providing an outlet for processing emotions."
+                      </p>
+                    </div>
+                    
+                    <div className="flex flex-col gap-3 mb-6">
+                      <div className="flex justify-center">
+                        <Badge className="bg-teal-500 text-white px-3 py-1 text-sm flex items-center">
+                          <Trophy className="h-4 w-4 mr-1" /> {streakCount} Day Streak
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex justify-center gap-2">
+                        <Badge className="bg-purple-500/90 text-white px-3 py-1 text-xs flex items-center">
+                          <Heart className="h-3 w-3 mr-1" /> Self-Care
+                        </Badge>
+                        <Badge className="bg-blue-500/90 text-white px-3 py-1 text-xs flex items-center">
+                          <Brain className="h-3 w-3 mr-1" /> Mindfulness
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      className="bg-teal-600 hover:bg-teal-700 text-white w-full flex items-center justify-center gap-1 py-6 rounded-full cursor-pointer"
+                      onClick={() => {
+                        dispatch(startNewJournal());
+                        setCurrentStep('input');
+                      }}
+                    >
+                      <PenLine className="h-4 w-4" />
+                      Continue Journaling
+                    </Button>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-
-        {/* Question Counter and Navigation Dots */}
-        {currentStep === 'questions' && (
-          <div className="mb-4 flex flex-col items-center">
-            <div className="text-zinc-400 text-sm font-medium">
-              {currentQuestionIndex + 1} / {questions.length}
-            </div>
-            
-            {/* Question navigation dots - simplified and more subtle */}
-            <div className="flex justify-center gap-1.5 mt-2">
-              {questions.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setDirection(index > currentQuestionIndex ? 'right' : 'left');
-                    setCurrentQuestionIndex(index);
-                  }}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${currentQuestionIndex === index 
-                    ? 'bg-teal-400 w-4' 
-                    : answers[index]?.trim()
-                      ? 'bg-teal-400/70'
-                      : 'bg-zinc-600'}`}
-                  aria-label={`Go to question ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

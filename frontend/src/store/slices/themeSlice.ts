@@ -7,15 +7,15 @@ interface ThemeState {
   mode: ThemeMode;
 }
 
-// Check for system preference on the client side
+// Always use dark theme for first-time users
 const getInitialTheme = (): ThemeMode => {
   if (typeof window === 'undefined') return 'dark';
   
   const savedTheme = localStorage.getItem('theme') as ThemeMode | null;
   if (savedTheme) return savedTheme;
   
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  return prefersDark ? 'dark' : 'light';
+  // Default to dark theme for first-time users instead of checking system preference
+  return 'dark';
 };
 
 const initialState: ThemeState = {

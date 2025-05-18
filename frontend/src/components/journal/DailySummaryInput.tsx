@@ -176,25 +176,23 @@ const DailySummaryInput: React.FC<DailySummaryInputProps> = ({
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.3 }}
     >
-      <Card className="overflow-hidden border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm hover:shadow-lg dark:hover:shadow-teal-600/30 transition-all duration-300 text-white relative">
+      <Card className="overflow-hidden border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm hover:shadow-lg hover:shadow-teal-600/20 dark:hover:shadow-teal-600/30 transition-all duration-300 text-slate-800 dark:text-white relative">
        {/* Decorative elements */}
        <div className="absolute -top-3 -left-3 w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 opacity-70 blur-sm"></div>
               <div className="absolute -bottom-3 -right-3 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 opacity-70 blur-sm"></div>
         <CardHeader className="pb-0 relative z-10">
             <div className="flex gap-4 items-center justify-between overflow-x-auto scrollbar-hide">
               {moodIcons.map((item, i) => (
-                <motion.div 
+                <div 
                   key={i}
-                  className={`p-1.5 rounded-full bg-zinc-800/80 ${item.color} opacity-70 hover:opacity-100 cursor-pointer transition-all`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
+                  className={`p-1.5 rounded-full bg-slate-100 dark:bg-zinc-800/80 ${item.color.replace('text-', 'text-')} opacity-90 hover:opacity-100 cursor-pointer transition-all hover:scale-110 active:scale-95`}
                 >
                   {item.icon}
-                </motion.div>
+                </div>
               ))}
           </div>
         </CardHeader>
@@ -203,24 +201,22 @@ const DailySummaryInput: React.FC<DailySummaryInputProps> = ({
           <div className="space-y-6">
             
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 shadow-inner">
-              <div className="text-white flex items-center gap-3">
-                <Sparkles className="h-5 w-5 text-amber-300" />
+              <div className="text-slate-700 dark:text-white flex items-center gap-3">
+                <Sparkles className="h-5 w-5 text-amber-500 dark:text-amber-300" />
                 <span className="font-medium text-sm">Share your thoughts and feelings about today</span>
               </div>
             </div>
             
-            <div className="relative mx-auto group">
-             
-              
+            <div className="relative group">
               <Textarea
                 placeholder="How was your day today? What did you accomplish? Any challenges?"
                 value={journalEntry}
                 onChange={(e) => setJournalEntry(e.target.value)}
-                className="min-h-[150px] max-h-[200px] resize-none bg-zinc-700/50 border-zinc-600 focus:border-white/50 focus:ring-white/20 text-white placeholder:text-white/50 rounded-lg shadow-inner transition-all duration-300 group-hover:shadow-teal-500/10"
+                className="min-h-[150px] max-h-[200px] resize-none bg-slate-100/80 dark:bg-zinc-700/50 border-slate-300 dark:border-zinc-600 focus:border-teal-500/50 dark:focus:border-white/50 focus:ring-teal-500/20 dark:focus:ring-white/20 text-slate-800 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/50 rounded-lg shadow-inner transition-all duration-300 group-hover:shadow-teal-500/10"
               />
-
                
-              <div className="absolute bottom-2 left-4 right-4 flex items-center justify-between w-[92%]">
+               {/* Prompt suggestions */}
+              <div className="absolute bottom-2 left-4 right-4 flex items-end justify-between w-[92%]">
               {!journalEntry.trim() ? (
                   <div className="flex overflow-x-auto gap-2 scrollbar-hide ">
                     {[
@@ -233,7 +229,7 @@ const DailySummaryInput: React.FC<DailySummaryInputProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => setJournalEntry(prompt.text.replace('...', '') + " ")}
-                        className="rounded-full px-3 py-1 text-[0.625rem] bg-zinc-800/70 text-white/70 hover:bg-zinc-700 hover:text-white border border-zinc-700/50 flex items-center gap-1 cursor-pointer"
+                        className="rounded-full px-3 py-1 text-[0.625rem] bg-slate-200/90 dark:bg-zinc-800/70 text-slate-700 dark:text-white/70 hover:bg-slate-300 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-zinc-700/50 flex items-center gap-1 cursor-pointer"
                       >
                         {prompt.icon}
                         {prompt.text}
@@ -241,16 +237,16 @@ const DailySummaryInput: React.FC<DailySummaryInputProps> = ({
                     ))}
                   </div>
               ): (
-                <div className="flex items-center gap-2">
-                <div className="h-1 w-20 bg-zinc-700 rounded-full overflow-hidden">
+                <div className="flex items-center gap-2 mb-2">
+                <div className="h-1 w-40 bg-slate-300 dark:bg-zinc-700 rounded-full overflow-hidden">
                   <motion.div 
                     className="h-full bg-gradient-to-r from-teal-500 to-blue-500"
                     initial={{ width: '0%' }}
                     animate={{ width: `${Math.min(100, (journalEntry.length / 500) * 100)}%` }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.2 }}
                   />
                 </div>
-                <span className="text-xs text-white/50">{journalEntry.length}</span>
+                <span className="text-xs text-slate-500 dark:text-white/50">{journalEntry.length} chars</span>
               </div>
               )}
                   
@@ -259,7 +255,7 @@ const DailySummaryInput: React.FC<DailySummaryInputProps> = ({
                     variant="outline" 
                     size="icon" 
                     onClick={handleSpeechRecognition}
-                    className={`rounded-full ml-2 ${isListening ? 'bg-red-500 border-red-400 animate-pulse shadow-lg shadow-red-500/20' : 'bg-gradient-to-r from-teal-500 to-blue-500 border-transparent'} text-white hover:shadow-md transition-all duration-300 cursor-pointer`}
+                    className={`rounded-full ml-2 ${isListening ? 'bg-red-500 border-red-400 animate-pulse shadow-lg shadow-red-500/20' : 'bg-gradient-to-r from-teal-500 to-blue-500 border-transparent'} text-white hover:shadow-md hover:shadow-teal-500/30 transition-all duration-300 cursor-pointer`}
                   >
                     {isListening ? <Mic className="h-4 w-4 text-white" /> : <Mic className="h-4 w-4" />}
                     {isListening && (
@@ -270,16 +266,12 @@ const DailySummaryInput: React.FC<DailySummaryInputProps> = ({
                     )}
                   </Button>
                 </div>
-              
-              
-         
-              
             </div>
           </div>
         </CardContent>
         <CardFooter className="p-4 flex justify-center items-center relative z-10">
           <div className="w-full flex flex-col gap-2">
-            <div className="flex justify-between items-center text-xs text-white/50 px-2 mb-1">
+            <div className="flex justify-between items-center text-xs text-slate-500 dark:text-white/50 px-2 mb-1">
               <div className="flex items-center gap-1">
                 <Brain className="h-3 w-3" />
                 <span>AI-powered journaling</span>
@@ -293,7 +285,7 @@ const DailySummaryInput: React.FC<DailySummaryInputProps> = ({
             <Button 
               onClick={onSubmit} 
               disabled={isSubmitting || !journalEntry.trim()}
-              className={`bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white w-full rounded-full transition-all duration-300 shadow-md hover:shadow-lg ${!journalEntry.trim() ? 'opacity-70' : 'opacity-100'}`}
+              className={`bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white w-full rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-teal-500/30 py-6 cursor-pointer ${!journalEntry.trim() ? 'opacity-70' : 'opacity-100'}`}
             >
               {isSubmitting ? (
                 <>

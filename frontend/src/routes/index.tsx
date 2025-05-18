@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "../layouts/RootLayout";
 import RunAgent from "../pages/RunAgent";
-import Journaling from "../pages/Journaling";
+import History from "../pages/History";
 import NotFound from "../pages/NotFound";
 
 const router = createBrowserRouter([
@@ -16,7 +16,7 @@ const router = createBrowserRouter([
       },
       {
         path: "history",
-        element: <Journaling />,
+        element: <History />,
       },
     ],
   },

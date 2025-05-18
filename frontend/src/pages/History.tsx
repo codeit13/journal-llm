@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -7,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { 
@@ -19,7 +21,8 @@ import {
   Calendar, 
   ChevronDown,
   Smile,
-  Filter
+  Filter,
+  MessageSquare
 } from 'lucide-react';
 import { 
   Popover,
@@ -36,10 +39,30 @@ import {
   analyzeJournalEntry,
   setJournalEntry, 
   fetchJournals,
-  startNewJournal,
-  type Journal
+  startNewJournal
 } from '../store';
 import type { RootState, AppDispatch } from '../store';
+
+// Define the Journal interface based on the API response
+interface Journal {
+  id: string;
+  date: string;
+  entry: string;
+  questions: string[];
+  answers: string[];
+  updated_at: string;
+}
+
+// Type guard to check if an object is a Journal
+function isJournal(obj: any): obj is Journal {
+  return obj && 
+    typeof obj.id === 'string' &&
+    typeof obj.date === 'string' &&
+    typeof obj.entry === 'string' &&
+    Array.isArray(obj.questions) &&
+    Array.isArray(obj.answers) &&
+    typeof obj.updated_at === 'string';
+}
 
 // Helper function to format dates nicely
 const formatDate = (dateString: string): string => {
@@ -69,24 +92,38 @@ const truncateText = (text: string, maxLength: number): string => {
   return text.substring(0, maxLength) + '...';
 };
 
-const Journaling = () => {
+const History = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { 
     journalEntry, 
     isSubmitting,
     isLoading,
-    journals,
     error 
   } = useSelector((state: RootState) => state.journal);
+  
+  // Access journals from the Redux store and ensure they match our Journal interface
+  const journals = useSelector((state: RootState) => {
+    const storeJournals = state.journal.journals || [];
+    // Ensure each journal matches our interface
+    return storeJournals.map((journal: any) => {
+      if (isJournal(journal)) return journal;
+      // If the journal doesn't match our interface, transform it
+      return {
+        id: journal.id || '',
+        date: journal.date || journal.createdAt || '',
+        entry: journal.entry || journal.content || '',
+        questions: journal.questions || [],
+        answers: journal.answers || [],
+        updated_at: journal.updated_at || journal.updatedAt || ''
+      } as Journal;
+    });
+  });
   
   // State for UI controls
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
-  const [showNewJournalDialog, setShowNewJournalDialog] = useState(false);
   const [selectedJournal, setSelectedJournal] = useState<Journal | null>(null);
   const [showJournalDialog, setShowJournalDialog] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
   
   // Fetch journals when component mounts
   const fetchedRef = useRef(false);
@@ -107,7 +144,6 @@ const Journaling = () => {
     try {
       const resultAction = await dispatch(analyzeJournalEntry(journalEntry));
       if (analyzeJournalEntry.fulfilled.match(resultAction)) {
-        setShowNewJournalDialog(false);
         toast.success('Journal entry created successfully!');
         // Refresh journals list
         dispatch(fetchJournals());
@@ -132,39 +168,28 @@ const Journaling = () => {
   };
   
   // Handle starting a new journal
+  const navigate = useNavigate();
   const handleStartNewJournal = () => {
     dispatch(startNewJournal());
-    setShowNewJournalDialog(true);
+    // Navigate to home route instead of showing dialog
+    navigate('/');
   };
   
-  // Filter journals based on search term, selected tag, and mood
+  // Filter journals based on search term
   const filteredJournals = journals.filter(journal => {
     const matchesSearch = searchTerm === '' || 
-      journal.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      journal.content.toLowerCase().includes(searchTerm.toLowerCase());
+      journal.entry.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      journal.questions.some((q: string) => q.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      journal.answers.some((a: string) => a.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesTag = selectedTag === null || 
-      (journal.tags && journal.tags.includes(selectedTag));
-    
-    const matchesMood = selectedMood === null || 
-      journal.mood === selectedMood;
-    
-    return matchesSearch && matchesTag && matchesMood;
+    return matchesSearch;
   });
   
-  // Get all unique tags from journals
-  const allTags = Array.from(new Set(
-    journals.flatMap(journal => journal.tags || [])
-  ));
-  
-  // Get all unique moods from journals
-  const allMoods = Array.from(new Set(
-    journals.filter(journal => journal.mood).map(journal => journal.mood as string)
-  ));
+  // No tags or moods in the new API response format
   
   // Group journals by date for the "By Date" tab
   const journalsByDate = filteredJournals.reduce((acc, journal) => {
-    const date = new Date(journal.createdAt).toLocaleDateString();
+    const date = new Date(journal.date).toLocaleDateString();
     if (!acc[date]) {
       acc[date] = [];
     }
@@ -179,46 +204,7 @@ const Journaling = () => {
 
   return (
     <div className="container mx-auto py-8 max-w-6xl">
-      {/* New Journal Dialog */}
-      <Dialog open={showNewJournalDialog} onOpenChange={setShowNewJournalDialog}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Create New Journal Entry</DialogTitle>
-            <DialogDescription>
-              Write your thoughts, reflections, or experiences. Be as detailed or brief as you'd like.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Input 
-                placeholder="Title (optional)" 
-                className="mb-2"
-                value={journalEntry.split('\n')[0] || ''}
-                onChange={(e) => {
-                  const title = e.target.value;
-                  const content = journalEntry.split('\n').slice(1).join('\n');
-                  dispatch(setJournalEntry(`${title}\n${content}`));
-                }}
-              />
-              <Textarea
-                placeholder="How was your day today?"
-                value={journalEntry.split('\n').slice(1).join('\n')}
-                onChange={(e) => {
-                  const title = journalEntry.split('\n')[0] || '';
-                  dispatch(setJournalEntry(`${title}\n${e.target.value}`));
-                }}
-                className="min-h-[300px] resize-none"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewJournalDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreateJournal} disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Entry'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Journal dialogs */}
 
       {/* Journal View Dialog */}
       <Dialog open={showJournalDialog} onOpenChange={setShowJournalDialog}>
@@ -227,29 +213,57 @@ const Journaling = () => {
             <>
               <DialogHeader>
                 <div className="flex justify-between items-center">
-                  <DialogTitle>{selectedJournal.title}</DialogTitle>
+                  <DialogTitle>Journal Entry</DialogTitle>
                   <div className="text-sm text-muted-foreground">
-                    {formatDate(selectedJournal.createdAt)}
+                    {formatDate(selectedJournal.date)}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedJournal.mood && (
-                    <Badge variant="secondary">
-                      <Smile className="mr-1 h-3 w-3" />
-                      {selectedJournal.mood}
-                    </Badge>
-                  )}
-                  {selectedJournal.tags && selectedJournal.tags.map(tag => (
-                    <Badge key={tag} variant="outline">
-                      <Tag className="mr-1 h-3 w-3" />
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                <DialogDescription>
+                  Last updated: {formatDate(selectedJournal.updated_at)}
+                </DialogDescription>
               </DialogHeader>
-              <div className="mt-4 whitespace-pre-wrap">
-                {selectedJournal.content}
+              
+              {/* Main journal entry */}
+              <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+                <h3 className="text-lg font-medium mb-2">Initial Journal Entry</h3>
+                <div className="whitespace-pre-wrap">
+                  {selectedJournal.entry}
+                </div>
               </div>
+              
+              {/* Questions and answers using accordion */}
+              <div className="mt-6">
+                <h3 className="text-lg font-medium mb-4">Follow-up Questions & Responses</h3>
+                <Accordion type="single" collapsible className="w-full">
+                  {selectedJournal.questions.map((question, index) => (
+                    <AccordionItem key={index} value={`question-${index}`} className="border rounded-lg mb-3 px-4">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex gap-2 items-center text-left">
+                          <div className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">
+                            Q
+                          </div>
+                          <div className="font-medium">{question}</div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pl-8">
+                        {selectedJournal.answers[index] ? (
+                          <div className="flex gap-2 items-center">
+                            <div className="bg-secondary/90 text-black dark:text-white text-xs font-semibold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              A
+                            </div>
+                            <div className="text-muted-foreground">
+                              {selectedJournal.answers[index]}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-muted-foreground italic">No answer provided</div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+              
               <DialogFooter className="mt-6">
                 <Button variant="outline" onClick={() => setShowJournalDialog(false)}>
                   Close
@@ -294,96 +308,12 @@ const Journaling = () => {
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="flex items-center">
-                <Tag className="mr-2 h-4 w-4" />
-                {selectedTag ? `Tag: ${selectedTag}` : 'Filter by Tag'}
-                {selectedTag && (
-                  <span 
-                    className="ml-2 cursor-pointer text-muted-foreground hover:text-foreground"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTag(null);
-                    }}
-                  >
-                    ×
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56">
-              <div className="space-y-2">
-                <div className="font-medium">Filter by Tag</div>
-                <div className="flex flex-wrap gap-2">
-                  {allTags.map(tag => (
-                    <Badge 
-                      key={tag} 
-                      variant={selectedTag === tag ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedTag(tag)}
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                  {allTags.length === 0 && (
-                    <div className="text-sm text-muted-foreground">No tags found</div>
-                  )}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="flex items-center">
-                <Smile className="mr-2 h-4 w-4" />
-                {selectedMood ? `Mood: ${selectedMood}` : 'Filter by Mood'}
-                {selectedMood && (
-                  <span 
-                    className="ml-2 cursor-pointer text-muted-foreground hover:text-foreground"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedMood(null);
-                    }}
-                  >
-                    ×
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56">
-              <div className="space-y-2">
-                <div className="font-medium">Filter by Mood</div>
-                <div className="flex flex-wrap gap-2">
-                  {allMoods.map(mood => (
-                    <Badge 
-                      key={mood} 
-                      variant={selectedMood === mood ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedMood(mood)}
-                    >
-                      {mood}
-                    </Badge>
-                  ))}
-                  {allMoods.length === 0 && (
-                    <div className="text-sm text-muted-foreground">No moods found</div>
-                  )}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          {(selectedTag || selectedMood || searchTerm) && (
+          {searchTerm && (
             <Button 
               variant="ghost" 
-              onClick={() => {
-                setSelectedTag(null);
-                setSelectedMood(null);
-                setSearchTerm('');
-              }}
+              onClick={() => setSearchTerm('')}
             >
-              Clear Filters
+              Clear Search
             </Button>
           )}
         </div>
@@ -429,28 +359,25 @@ const Journaling = () => {
                 >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{journal.title}</CardTitle>
+                      <CardTitle className="text-lg">Journal Entry</CardTitle>
                       <div className="text-xs text-muted-foreground">
-                        {formatDate(journal.createdAt)}
+                        {formatDate(journal.date)}
                       </div>
                     </div>
-                    {journal.mood && (
-                      <Badge variant="secondary" className="mt-2">
-                        {journal.mood}
-                      </Badge>
-                    )}
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      {truncateText(journal.content, 150)}
+                      {truncateText(journal.entry, 150)}
                     </p>
+                    <div className="mt-3 flex items-center text-xs text-muted-foreground">
+                      <MessageSquare className="h-3 w-3 mr-1" />
+                      <span>{journal.questions.length} follow-up questions</span>
+                    </div>
                   </CardContent>
                   <CardFooter className="flex flex-wrap gap-2 pt-0">
-                    {journal.tags && journal.tags.map(tag => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
+                    <Badge variant="outline" className="text-xs">
+                      Last updated: {formatDate(journal.updated_at)}
+                    </Badge>
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -481,28 +408,25 @@ const Journaling = () => {
                       >
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
-                            <CardTitle className="text-lg">{journal.title}</CardTitle>
+                            <CardTitle className="text-lg">Journal Entry</CardTitle>
                             <div className="text-xs text-muted-foreground">
-                              {new Date(journal.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(journal.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </div>
-                          {journal.mood && (
-                            <Badge variant="secondary" className="mt-2">
-                              {journal.mood}
-                            </Badge>
-                          )}
                         </CardHeader>
                         <CardContent>
                           <p className="text-muted-foreground">
-                            {truncateText(journal.content, 150)}
+                            {truncateText(journal.entry, 150)}
                           </p>
+                          <div className="mt-3 flex items-center text-xs text-muted-foreground">
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            <span>{journal.questions.length} follow-up questions</span>
+                          </div>
                         </CardContent>
                         <CardFooter className="flex flex-wrap gap-2 pt-0">
-                          {journal.tags && journal.tags.map(tag => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
+                          <Badge variant="outline" className="text-xs">
+                            Last updated: {formatDate(journal.updated_at)}
+                          </Badge>
                         </CardFooter>
                       </Card>
                     </motion.div>
@@ -517,4 +441,4 @@ const Journaling = () => {
   );
 };
 
-export default Journaling;
+export default History;
