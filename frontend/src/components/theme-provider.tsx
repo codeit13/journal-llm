@@ -25,7 +25,8 @@ export function ThemeProvider({
     <NextThemesProvider
       attribute={attribute as "class"}
       defaultTheme={defaultTheme}
-      enableSystem={enableSystem}
+      enableSystem={false} // Force disable system theme
+      forcedTheme={typeof window !== 'undefined' && !localStorage.getItem('theme') ? 'dark' : undefined}
       {...props}
     >
       <ThemeSynchronizer>{children}</ThemeSynchronizer>
@@ -46,7 +47,7 @@ function ThemeSynchronizer({ children }: { children: React.ReactNode }) {
     
     // If Redux theme is not set or different from next-themes, update Redux
     if (!themeMode || theme !== themeMode) {
-      dispatch(setThemeMode(theme as 'light' | 'dark' | 'system'));
+      dispatch(setThemeMode(theme as 'light' | 'dark'));
     }
   }, [theme, themeMode, dispatch]);
   
@@ -57,15 +58,32 @@ function ThemeSynchronizer({ children }: { children: React.ReactNode }) {
     }
   }, [themeMode, theme, setTheme]);
   
-  // Set initial theme to dark if not set
+  // Set initial theme to dark if not set and force dark theme when localStorage is cleared
   useEffect(() => {
-    if (!themeMode && !activeTheme && typeof window !== 'undefined') {
-      // Always use dark theme for first-time users
+    if (typeof window !== 'undefined') {
+      // Check if theme is stored in localStorage
+      const storedTheme = localStorage.getItem('theme');
+      
+      // Force dark theme when localStorage is cleared or for first-time users
+      if (!storedTheme) {
+        const defaultTheme = 'dark';
+        setTheme(defaultTheme);
+        dispatch(setThemeMode(defaultTheme));
+        // Explicitly set in localStorage to prevent system theme
+        localStorage.setItem('theme', defaultTheme);
+      }
+    }
+  }, [setTheme, dispatch]);
+  
+  // Additional check to catch any case where theme might be 'system'
+  useEffect(() => {
+    if (activeTheme === 'system' && typeof window !== 'undefined') {
       const defaultTheme = 'dark';
       setTheme(defaultTheme);
       dispatch(setThemeMode(defaultTheme));
+      localStorage.setItem('theme', defaultTheme);
     }
-  }, [themeMode, activeTheme, setTheme, dispatch]);
+  }, [activeTheme, setTheme, dispatch]);
   
   return <>{children}</>;
 }
